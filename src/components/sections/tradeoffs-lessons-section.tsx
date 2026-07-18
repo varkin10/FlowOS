@@ -174,14 +174,16 @@ export function TradeoffsLessonsSection() {
               Prioritization describe the scoring model a bit more loosely
               (&ldquo;weighted proximity + stock + cost&rdquo;) than what got
               built (stock gates eligibility; the score is distance, cost,
-              and capacity). Caught on review and logged honestly in the{" "}
+              and capacity). Caught on review and left as a disclosed
+              inconsistency rather than silently patched — the engine&apos;s
+              weights and logic are treated as frozen once built, and the{" "}
               <a
                 href="#decision-journal"
                 className="font-medium text-foreground underline underline-offset-2 hover:no-underline"
               >
                 Decision Journal
               </a>{" "}
-              rather than quietly patched.
+              documents the actual reasoning behind that scoring choice.
             </li>
             <li>
               Computing the KPI section by actually re-running the real
@@ -197,14 +199,8 @@ export function TradeoffsLessonsSection() {
               demo scenario wasn&apos;t actually illustrating the feature
               well. A demo&apos;s default state is itself a product
               decision worth testing deliberately, not an afterthought —
-              logged as its own entry in the{" "}
-              <a
-                href="#decision-journal"
-                className="font-medium text-foreground underline underline-offset-2 hover:no-underline"
-              >
-                Decision Journal
-              </a>
-              .
+              fixed by retuning the default scenario, not the underlying
+              sourcing logic.
             </li>
           </ul>
         </div>

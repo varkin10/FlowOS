@@ -20,108 +20,85 @@ interface DecisionEntry {
 const decisions: DecisionEntry[] = [
   {
     id: "01",
-    phaseLabel: "Foundation",
-    decision: "Single-page scroll site with sticky nav, not a multi-page app",
-    why: "This is a narrative case study meant to be read start-to-finish, not a product with distinct destinations to navigate between.",
-    alternatives:
-      "A multi-page site with one route per section — more typical for an actual product.",
-    tradeoff:
-      "Everything renders on one route, so there's no per-section code-splitting — the page gets heavier as more interactive sections (Demo, KPIs) are added.",
-    impact:
-      "A cohesive, skimmable reading experience via the sticky nav; first-load JS has grown to ~283KB by Phase 6, worth watching as more sections ship.",
-  },
-  {
-    id: "02",
-    phaseLabel: "Foundation",
-    decision: "SQLite instead of a hosted Postgres instance",
-    why: "A portfolio case study doesn't need an always-on hosted database or multi-user concurrency — SQLite is a single file, zero-config, and fully reproducible.",
-    alternatives:
-      "Postgres on a hosted provider (Vercel/Supabase/Neon) for closer-to-production realism.",
-    tradeoff:
-      "Not concurrency-safe and not how a real OMS would be deployed — acceptable because this is a single-visitor demo, not a live multi-tenant system.",
-    impact:
-      "Zero external services or secrets to configure; db:push + db:seed fully reproduce the dataset from scratch on any machine.",
-  },
-  {
-    id: "03",
     phaseLabel: "Phase 4 → 5",
     phaseHref: "#interactive-demo",
     decision:
-      "Weighted-score sourcing (distance + cost + capacity) over a simple nearest-location rule",
-    why: "A single hard-coded rule can't represent real trade-offs — Amazon's network-scale routing (Industry Signals) and the RICE scoring both pointed at a multi-factor score instead.",
+      "Weighting cost-to-ship and capacity load alongside distance, not routing to the nearest location with stock",
+    why: "A pure nearest-location rule regularly picks an available location while ignoring everything else that determines whether it's actually the right one — it optimizes for distance and nothing else.",
     alternatives:
-      "Nearest-location-with-stock only (the actual “Now”-horizon baseline in Strategy & Roadmap); a fixed priority order (always cheapest DC, or always nearest store).",
+      "Nearest-location-with-stock only — this is literally the Strategy & Roadmap “Now”-horizon baseline; a fixed priority order (always the regional DC, or always the closest store).",
     tradeoff:
-      "A fixed-weight formula (distance 40% / cost 35% / capacity 25%) is fully explainable but not adaptive — it can't learn from outcomes or vary by SKU or season.",
+      "A fixed-weight formula (distance 40% / cost 35% / capacity 25%) is fully explainable to a stakeholder in one sentence, but it can't learn from outcomes or flex by SKU or season the way a model-based approach eventually could.",
     impact:
-      "Became the literal Interactive Demo scoring logic, and the source of the KPI section's quantified cost-to-serve improvement (4.5% vs. the naive baseline).",
+      "Cuts average cost-to-serve by 4.5% against the naive nearest-only baseline across the full simulated order set ($100.68 → $96.12) — the number the roadmap bet on.",
+  },
+  {
+    id: "02",
+    phaseLabel: "Phase 4",
+    phaseHref: "#discovery-prioritization",
+    decision: "Scoping the MVP to sourcing decision + EDD only",
+    why: "Split-shipment logic, live carrier APIs, real-time capacity signals, and demand forecasting each depend on something that doesn't exist yet — a carrier integration, a demand history to forecast from, or a live network-state feed. Building any of them first means building on an unproven foundation.",
+    alternatives:
+      "Ship split-shipment logic in the same release, since some orders genuinely need it; hold the release entirely until a carrier integration exists so EDD would be accurate from day one.",
+    tradeoff:
+      "Operationally: an order that would ideally split across two nearby locations instead sources from a single location that may cost more or sit farther away, and in the rare case no single location has enough stock, it can't be sourced automatically at all — quantified at a 1.3% split-shipment rate across simulated orders, with EDD capped by a static transit-time table instead of real carrier data.",
+    impact:
+      "Split-shipment logic scored lowest of four RICE-scored candidates (RICE 7 vs. 135 for cost-aware sourcing) — deferring it was the correct sequencing call, not a corner cut, and both costs above are small and directly measured, not hidden.",
+  },
+  {
+    id: "03",
+    phaseLabel: "Phase 5",
+    phaseHref: "#interactive-demo",
+    decision: "Weighting store stock less confidently than DC stock",
+    why: "Store counts drift from manual handling and foot traffic between cycle counts; DCs are more automated and counted more often. Trusting every location's raw on-hand number equally would let a store with stale, optimistic stock data still “win” a sourcing decision it can't actually fulfill.",
+    alternatives:
+      "Trust every location's on-hand count equally regardless of type — the industry pattern Walmart's public investment in real-time inventory visibility (Industry Signals) was a direct reaction against.",
+    tradeoff:
+      "Stores are seeded with a lower stock-confidence factor (~82–94%) than DCs (~93–99%), applied before comparing on-hand stock to the requested quantity. A store that genuinely has enough stock can still get excluded if its confidence-adjusted effective stock dips just under what's needed — a deliberately conservative bias toward avoiding oversells over maximizing store utilization.",
+    impact:
+      "Directly protects fill rate and reduces the oversell risk the Problem section opens with, at the cost of occasionally under-using real, available store inventory.",
   },
   {
     id: "04",
-    phaseLabel: "Phase 4",
-    phaseHref: "#discovery-prioritization",
+    phaseLabel: "Phase 3",
+    phaseHref: "#strategy-roadmap",
     decision:
-      "Prioritizing cost-aware sourcing over three other RICE candidates",
-    why: "It scored highest by a wide margin (RICE 135 vs. 35 / 24 / 7) because it reuses data the OMS already holds — no new live integrations required.",
+      "Sequencing cost-aware sourcing before predictive, demand-aware sourcing",
+    why: "Cost-aware sourcing only needs data the OMS already holds — distance, on-hand stock, cost. Predictive sourcing needs a real demand-forecasting signal, which needs historical order and promotion data a first release doesn't have yet.",
     alternatives:
-      "Real-time capacity checks (RICE 24), dynamic EDD (RICE 35), and split-shipment logic (RICE 7) — all deferred, not rejected.",
+      "Build the promo-aware, demand-forecasting version first, since it's the more sophisticated answer and the more impressive one to point to.",
     tradeoff:
-      "Those three capabilities address real problems (stale capacity data, a static EDD table, no split-shipment optimization) that are simply out of scope until this baseline is proven.",
+      "Until the Later horizon ships, sourcing reacts to today's stock and capacity only — it can't get ahead of a known future demand spike the way a forecasting-informed system eventually will.",
     impact:
-      "Set the entire Phase 5 build scope — the Interactive Demo builds exactly the RICE winner, nothing else.",
+      "Ships real cost-to-serve savings in the Next horizon (6–12 months) instead of betting the first release on a forecasting model with no historical data to train on yet.",
   },
   {
     id: "05",
-    phaseLabel: "Phase 4",
-    phaseHref: "#discovery-prioritization",
-    decision: "Scoping the MVP to sourcing + EDD only",
-    why: "An explainable sourcing decision plus an EDD calculation is a complete, defensible loop on its own — a live carrier integration or a demand-forecasting model each add a dependency that isn't ready yet.",
+    phaseLabel: "Phase 6",
+    phaseHref: "#kpis-impact",
+    decision:
+      "Delivery-promise accuracy was the hardest KPI to define cleanly",
+    why: "This MVP has no live carrier integration (a deliberate scope decision — see above), so there's no ground truth to compare the promised EDD against. Every other KPI here is computed directly from the sourcing engine's own outputs; this one required assuming an “actual” delivery outcome that doesn't otherwise exist.",
     alternatives:
-      "A thinner sourcing-only demo with no EDD; a fuller build with live carrier API integration for real transit times.",
+      "Omit the KPI entirely until real tracking data exists; report a static illustrative number instead of running it through the simulation.",
     tradeoff:
-      "EDD uses a static, zone-based transit-time table rather than real carrier performance data — less accurate than production would need, but fully auditable.",
+      "EDD hit rate is reported as a modeled estimate (80.3%) — actual delivery outcomes are simulated with a disclosed on-time/late variance distribution. It's directionally reasonable but exactly as trustworthy as the assumed distribution feeding it, and that's disclosed directly in the KPI section rather than buried.",
     impact:
-      "Kept Phase 5 achievable with one Prisma schema and no external API keys, while still shipping a complete sourcing-to-promise flow.",
+      "Keeps the KPI framework ready to plug in real carrier tracking the moment that integration ships, without pretending this release already has it.",
   },
   {
     id: "06",
     phaseLabel: "Phase 5",
     phaseHref: "#interactive-demo",
     decision:
-      "Showing the full score breakdown for the top 2–3 candidates, not just the winner",
-    why: "The whole premise of this case study is that a sourcing decision should be explainable to a stakeholder — a single winning location with no reasoning is a black box.",
+      "Weighting distance slightly higher than cost, not the other way around",
+    why: "Both are defensible fulfillment strategies. Weighting cost highest would maximize margin per order; weighting distance highest favors a faster, more consistent delivery experience — closer to what Strategy & Roadmap's vision statement actually promises: the right item, at the right cost, in the right amount of time.",
     alternatives:
-      "Show only the winning location and the final EDD date; a one-sentence explanation with no numeric breakdown.",
+      "Weight cost-to-ship highest — a margin-first posture that would route more orders to cheaper, more distant DCs even when a nearby store is only marginally more expensive.",
     tradeoff:
-      "More UI surface area and cognitive load per result than a clean, consumer-style “here's your delivery date” screen.",
+      "Distance is weighted highest (40%), ahead of cost-to-ship (35%) and capacity load (25%). A margin-first weighting would likely lower cost-to-serve further, but at the cost of average delivery time and, by extension, delivery-promise accuracy.",
     impact:
-      "Set the design language for the rest of the site — every section that makes a claim (the RICE table, roadmap rationale, KPI “why it matters” fields) shows its reasoning, not just its conclusion.",
-  },
-  {
-    id: "07",
-    phaseLabel: "Phase 5",
-    phaseHref: "#interactive-demo",
-    decision: "Stock as a hard eligibility filter, not a weighted score input",
-    why: "A location either can or can't fulfill an order — folding stock into a soft-weighted score could let an under-stocked location still “win” on paper.",
-    alternatives:
-      "Scoring stock depth/confidence as a fourth weighted factor alongside distance, cost, and capacity — closer to how the Industry Signals and Discovery & Prioritization sections describe it in prose.",
-    tradeoff:
-      "Created a minor wording mismatch between those earlier narrative sections (“weighted proximity + stock + cost”) and the actual engine (stock gates eligibility; the score is distance/cost/capacity) — caught on review, left as-is since the engine's weights and logic are intentionally frozen.",
-    impact:
-      "The engine never recommends a location that can't actually fulfill the order, at the cost of that one cross-section wording inconsistency.",
-  },
-  {
-    id: "08",
-    phaseLabel: "Phase 5",
-    phaseHref: "#interactive-demo",
-    decision: "Retuning the default demo scenario instead of the sourcing engine",
-    why: "Testing the disruption toggles found the original default address (Charlotte, NC) didn't visibly demonstrate the “nearest location out of stock” toggle — the engine's weights weren't wrong, the default preset just wasn't illustrative.",
-    alternatives:
-      "Adjusting the engine's weights or seed stock levels so more scenarios show a visible change.",
-    tradeoff:
-      "About half of all SKU/address combinations still show “no visible change” for a given toggle — correct, realistic behavior, just not the default experience anymore.",
-    impact:
-      "A first-time visitor now sees a real winner + EDD change without touching any inputs; the underlying engine was never modified.",
+      "Keeps average delivery time and EDD hit rate as first-class outcomes rather than whatever falls out of a pure cost-minimization score — protects speed and reliability slightly ahead of squeezing the last few points of cost-to-serve.",
   },
 ];
 
@@ -142,7 +119,7 @@ export function DecisionJournalSection() {
       id="decision-journal"
       index={7}
       title="Decision Journal"
-      description="A log of the significant product and technical decisions made while building this project, pulled from what was actually decided in Phases 1–6 — not a fictional team's, this one's the author's own."
+      description="A log of the significant fulfillment-product decisions made while designing this project's sourcing and EDD logic — the kind of calls a PM owning OMS/Sourcing/EDD would make and defend to stakeholders, pulled from what was actually designed in Phases 3–6."
     >
       <div className="flex flex-col divide-y divide-border/60 rounded-lg border border-border/60">
         {decisions.map((d) => (
@@ -170,7 +147,7 @@ export function DecisionJournalSection() {
               <Field label="Why" text={d.why} />
               <Field label="Alternatives considered" text={d.alternatives} />
               <Field label="Trade-off accepted" text={d.tradeoff} />
-              <Field label="Impact" text={d.impact} />
+              <Field label="Business impact" text={d.impact} />
             </div>
           </div>
         ))}
