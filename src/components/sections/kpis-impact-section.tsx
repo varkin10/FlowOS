@@ -100,7 +100,7 @@ export async function KpisImpactSection() {
           </div>
         </div>
 
-        {/* 2. Cost-to-serve — the explicit Phase 3/4 tie-back */}
+        {/* 2. Cost-to-serve — the explicit Strategy & Roadmap / Discovery & Prioritization tie-back */}
         <div className="border-b border-border/60 pb-16">
           <div className="grid gap-8 lg:grid-cols-[1fr_360px] lg:items-start">
             <div>
@@ -146,7 +146,8 @@ export async function KpisImpactSection() {
 
               <div className="mt-6 rounded-lg border border-foreground/20 bg-secondary/40 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Connected to Phase 3 &amp; 4
+                  Connected to Strategy &amp; Roadmap and Discovery &amp;
+                  Prioritization
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   <a

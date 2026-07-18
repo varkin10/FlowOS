@@ -20,7 +20,7 @@ interface DecisionEntry {
 const decisions: DecisionEntry[] = [
   {
     id: "01",
-    phaseLabel: "Phase 4 → 5",
+    phaseLabel: "Discovery & Prioritization → Interactive Demo",
     phaseHref: "#interactive-demo",
     decision:
       "Weighting cost-to-ship and capacity load alongside distance, not routing to the nearest location with stock",
@@ -34,7 +34,7 @@ const decisions: DecisionEntry[] = [
   },
   {
     id: "02",
-    phaseLabel: "Phase 4",
+    phaseLabel: "Discovery & Prioritization",
     phaseHref: "#discovery-prioritization",
     decision: "Scoping the MVP to sourcing decision + EDD only",
     why: "Split-shipment logic, live carrier APIs, real-time capacity signals, and demand forecasting each depend on something that doesn't exist yet — a carrier integration, a demand history to forecast from, or a live network-state feed. Building any of them first means building on an unproven foundation.",
@@ -47,7 +47,7 @@ const decisions: DecisionEntry[] = [
   },
   {
     id: "03",
-    phaseLabel: "Phase 5",
+    phaseLabel: "Interactive Demo",
     phaseHref: "#interactive-demo",
     decision: "Weighting store stock less confidently than DC stock",
     why: "Store counts drift from manual handling and foot traffic between cycle counts; DCs are more automated and counted more often. Trusting every location's raw on-hand number equally would let a store with stale, optimistic stock data still “win” a sourcing decision it can't actually fulfill.",
@@ -60,7 +60,7 @@ const decisions: DecisionEntry[] = [
   },
   {
     id: "04",
-    phaseLabel: "Phase 3",
+    phaseLabel: "Strategy & Roadmap",
     phaseHref: "#strategy-roadmap",
     decision:
       "Sequencing cost-aware sourcing before predictive, demand-aware sourcing",
@@ -74,7 +74,7 @@ const decisions: DecisionEntry[] = [
   },
   {
     id: "05",
-    phaseLabel: "Phase 6",
+    phaseLabel: "KPIs & Impact",
     phaseHref: "#kpis-impact",
     decision:
       "Delivery-promise accuracy was the hardest KPI to define cleanly",
@@ -88,7 +88,7 @@ const decisions: DecisionEntry[] = [
   },
   {
     id: "06",
-    phaseLabel: "Phase 5",
+    phaseLabel: "Interactive Demo",
     phaseHref: "#interactive-demo",
     decision:
       "Weighting distance slightly higher than cost, not the other way around",
@@ -119,7 +119,7 @@ export function DecisionJournalSection() {
       id="decision-journal"
       index={7}
       title="Decision Journal"
-      description="A log of the significant fulfillment-product decisions made while designing this project's sourcing and EDD logic — the kind of calls a PM owning OMS/Sourcing/EDD would make and defend to stakeholders, pulled from what was actually designed in Phases 3–6."
+      description="A log of the significant fulfillment-product decisions made while designing this project's sourcing and EDD logic — the kind of calls a PM owning OMS/Sourcing/EDD would make and defend to stakeholders, pulled from what was actually designed across Strategy & Roadmap, Discovery & Prioritization, Interactive Demo, and KPIs & Impact."
     >
       <div className="flex flex-col divide-y divide-border/60 rounded-lg border border-border/60">
         {decisions.map((d) => (

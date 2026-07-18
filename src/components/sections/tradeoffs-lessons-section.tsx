@@ -82,7 +82,7 @@ export function TradeoffsLessonsSection() {
       id="tradeoffs-lessons"
       index={8}
       title="Trade-offs & Lessons Learned"
-      description="An honest retrospective: what this scoped version deliberately leaves out and why, what a real implementation would need that this doesn't have, and what building it surfaced about the earlier phases of this project."
+      description="An honest retrospective: what this scoped version deliberately leaves out and why, what a real implementation would need that this doesn't have, and what modeling the problem concretely surfaced about fulfillment itself."
     >
       <div className="space-y-16">
         <div>
@@ -164,43 +164,63 @@ export function TradeoffsLessonsSection() {
           <div className="flex items-center gap-2">
             <FlaskConical className="size-4 text-muted-foreground" />
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Lessons learned building this
+              What modeling this concretely surfaced
             </p>
           </div>
           <ul className="mt-3 space-y-3 text-sm text-muted-foreground">
             <li>
-              Writing the narrative sections before the engine existed
-              created a real risk: Industry Signals and Discovery &amp;
-              Prioritization describe the scoring model a bit more loosely
-              (&ldquo;weighted proximity + stock + cost&rdquo;) than what got
-              built (stock gates eligibility; the score is distance, cost,
-              and capacity). Caught on review and left as a disclosed
-              inconsistency rather than silently patched — the engine&apos;s
-              weights and logic are treated as frozen once built, and the{" "}
-              <a
-                href="#decision-journal"
-                className="font-medium text-foreground underline underline-offset-2 hover:no-underline"
-              >
-                Decision Journal
-              </a>{" "}
-              documents the actual reasoning behind that scoring choice.
+              <span className="font-medium text-foreground">
+                What a real implementation would still need:
+              </span>{" "}
+              actual carrier performance data to replace the assumed
+              transit-time bands, real historical order volume to fit the
+              demand-forecasting model the roadmap defers to Later — and,
+              less technical but just as necessary, explicit sign-off from
+              Ops and Finance on the sourcing formula itself before it
+              ships. A scoring model that trades cost against speed is a
+              policy decision, not just an engineering one.
             </li>
             <li>
-              Computing the KPI section by actually re-running the real
-              engine across hundreds of synthetic orders — instead of
-              writing plausible-sounding stats — surfaced a genuine
-              surprise: fill rate holds at a flat 100% given the seeded
-              stock levels. That ended up making the case study&apos;s own
-              point better than an invented number would have — steady
-              state isn&apos;t the risk here; spikes and disruptions are.
+              <span className="font-medium text-foreground">
+                What I&apos;d do differently with more time:
+              </span>{" "}
+              the distance/cost/capacity weights (40% / 35% / 25%) are
+              asserted, not fit. With real historical order data, they
+              should be backtested against actual outcomes before being
+              locked in — the same way the 0.5-day EDD buffer is an
+              estimate that should be validated against real carrier
+              on-time performance rather than assumed.
             </li>
             <li>
-              Testing the disruption toggle by hand found that the default
-              demo scenario wasn&apos;t actually illustrating the feature
-              well. A demo&apos;s default state is itself a product
-              decision worth testing deliberately, not an afterthought —
-              fixed by retuning the default scenario, not the underlying
-              sourcing logic.
+              <span className="font-medium text-foreground">
+                What surprised me about the problem itself:
+              </span>{" "}
+              cost-to-serve turns out to be driven far more by which type
+              of location fulfills an order than by fine differences in
+              distance — a store&apos;s manual-handling cost premium
+              (roughly 8–18% above a DC&apos;s) routinely outweighs a
+              location being tens of miles closer. The second surprise came
+              from the disruption toggle: the sourcing decision is stable
+              under normal conditions but genuinely fragile the moment a
+              real contender — the nearest store, or the busiest DC — gets
+              knocked out. EDD can swing a full day on a single node going
+              down.
+            </li>
+            <li>
+              <span className="font-medium text-foreground">
+                What I&apos;d want to validate with Ops and Finance before
+                shipping this:
+              </span>{" "}
+              whether the stock-confidence gap between stores and DCs
+              (~82–94% vs. ~93–99%) matches Ops&apos;s actual cycle-count
+              variance, not an assumed split; whether the carrier
+              cost-per-mile and handling-fee assumptions behind the
+              quantified 4.5% cost-to-serve improvement hold up against
+              Finance&apos;s real contracted rates before that number is
+              treated as a savings projection; and whether both teams
+              actually agree that distance should outweigh cost in the
+              scoring — that&apos;s a speed-versus-margin trade-off worth a
+              real conversation, not a default.
             </li>
           </ul>
         </div>
