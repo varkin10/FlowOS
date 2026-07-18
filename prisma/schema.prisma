@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// "STORE" | "DC"
+model Location {
+  id             String       @id @default(cuid())
+  name           String
+  type           String
+  city           String
+  state          String
+  lat            Float
+  lng            Float
+  costMultiplier Float
+  capacityPerDay Int
+  currentLoad    Int
+  stockLevels    StockLevel[]
+}
+
+model Sku {
+  id           String       @id @default(cuid())
+  code         String       @unique
+  name         String
+  category     String
+  unitWeightLb Float
+  stockLevels  StockLevel[]
+}
+
+model StockLevel {
+  id              String   @id @default(cuid())
+  locationId      String
+  skuId           String
+  onHand          Int
+  stockConfidence Float
+  location        Location @relation(fields: [locationId], references: [id])
+  sku             Sku      @relation(fields: [skuId], references: [id])
+
+  @@unique([locationId, skuId])
+}
+
+model CarrierProfile {
+  id               String @id @default(cuid())
+  label            String
+  distanceBandMaxMi Int
+  transitDaysMin   Float
+  transitDaysMax   Float
+  costPerMile      Float
+}
+
+model CustomerLocation {
+  id        String @id @default(cuid())
+  label     String
+  city      String
+  state     String
+  lat       Float
+  lng       Float
+  sortOrder Int    @default(0)
+}
